@@ -1,5 +1,5 @@
+import { cart } from '../data/cart.js';
 const addedTimeoutIds={};
-
 let added=false;
 let productsHTML=''
 products.forEach((product)=>{
@@ -90,15 +90,15 @@ document.querySelectorAll('.js-add-to-cart')
         else{
           cart.push({
           productId,
-          Quantity: Number(StrQuan)
+          quantity: Number(StrQuan)
           })
         }
-        let cartQuantity=0;
+        let cartquantity=0;
         cart.forEach((item)=>{
-          cartQuantity+=item.Quantity
+          cartQuantity+=item.quantity
         })
         document.querySelector('.js-cart-quantity')
-          .innerHTML=cartQuantity
+          .innerHTML=cartquantity
     console.log(cart);
     })
   })

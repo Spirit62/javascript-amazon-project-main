@@ -1,4 +1,6 @@
-import { cart } from '../data/cart.js';
+import { cart, addToCart } from '../data/cart.js';
+import { products } from '../data/products.js';
+import { formatCurrency } from "./utils/money.js";
 const addedTimeoutIds={};
 let added=false;
 let productsHTML=''
@@ -22,7 +24,7 @@ products.forEach((product)=>{
         </div>
     </div>
     <div class="product-price">
-            ${(product.priceCents/100).toFixed(2)}
+            ${formatCurrency(product.priceCents)}
           </div>
 
           <div class="product-quantity-container">
@@ -56,6 +58,15 @@ products.forEach((product)=>{
   productsHTML+=html;
     
 })
+function updateCartQuantity(){
+  let cartQuantity=0;
+        cart.forEach((cartItem)=>{
+          cartQuantity+=cartItem.Quantity
+        })
+        document.querySelector('.js-cart-quantity')
+          .innerHTML=cartQuantity
+}
+ 
 
 document.querySelector('.js-products-grid')
   .innerHTML=productsHTML;
@@ -64,7 +75,7 @@ document.querySelectorAll('.js-add-to-cart')
     button.addEventListener('click',()=>{
       const { productId } = button.dataset;
       let StrQuan=document.querySelector(`.js-quantity-selector-${productId}`)
-        .value
+          .value
       const addedMessage = document.querySelector(`.js-added-to-cart-${productId}`);
         addedMessage.classList.add('added-to-cart-click')
 
@@ -78,28 +89,11 @@ document.querySelectorAll('.js-add-to-cart')
       },2000)
 
       addedTimeoutIds[productId]=timeoutId;
-      let matchingitem;
-      cart.forEach((item)=>{
-        if (productId===item.productId){
-          matchingitem=item;
-        }
-      })
-       if(matchingitem){
-          matchingitem.Quantity+=Number(StrQuan);
-        }
-        else{
-          cart.push({
-          productId,
-          quantity: Number(StrQuan)
-          })
-        }
-        let cartquantity=0;
-        cart.forEach((item)=>{
-          cartQuantity+=item.quantity
-        })
-        document.querySelector('.js-cart-quantity')
-          .innerHTML=cartquantity
+      addToCart(productId,StrQuan);
+      updateCartQuantity();
+        
     console.log(cart);
     })
-  })
+  });
+  
   

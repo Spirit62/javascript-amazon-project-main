@@ -1,4 +1,6 @@
+const addedTimeoutIds={};
 
+let added=false;
 let productsHTML=''
 products.forEach((product)=>{
   let html = `
@@ -40,7 +42,7 @@ products.forEach((product)=>{
 
           <div class="product-spacer"></div>
 
-          <div class="added-to-cart">
+          <div class="js-added-to-cart-${product.id} added-to-cart">
             <img src="images/icons/checkmark.png">
             Added
           </div>
@@ -60,9 +62,22 @@ document.querySelector('.js-products-grid')
 document.querySelectorAll('.js-add-to-cart')
   .forEach((button)=>{
     button.addEventListener('click',()=>{
-      const productId=button.dataset.productId;
+      const { productId } = button.dataset;
       let StrQuan=document.querySelector(`.js-quantity-selector-${productId}`)
         .value
+      const addedMessage = document.querySelector(`.js-added-to-cart-${productId}`);
+        addedMessage.classList.add('added-to-cart-click')
+
+      const previousTimeoutId = addedTimeoutIds[productId];
+      if (previousTimeoutId) {
+        clearTimeout(previousTimeoutId);
+      }
+      const timeoutId= setTimeout(()=>{
+        document.querySelector(`.js-added-to-cart-${productId}`)
+          .classList.remove('added-to-cart-click')
+      },2000)
+
+      addedTimeoutIds[productId]=timeoutId;
       let matchingitem;
       cart.forEach((item)=>{
         if (productId===item.productId){
@@ -74,7 +89,7 @@ document.querySelectorAll('.js-add-to-cart')
         }
         else{
           cart.push({
-          productId: productId,
+          productId,
           Quantity: Number(StrQuan)
           })
         }

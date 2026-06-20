@@ -1,6 +1,7 @@
-import { cart, removeFromCart } from "../data/cart.js";
+import { cart, removeFromCart, calculateCartQuantity, updateQuantity, updateCartQuantity} from "../data/cart.js";
 import { products } from "../data/products.js";
 import { formatCurrency } from "./utils/money.js";
+
 let cartSummaryHTML = '';
 
 cart.forEach((cartItem) => {
@@ -32,12 +33,14 @@ cart.forEach((cartItem) => {
             </div>
             <div class="product-quantity">
               <span>
-                Quantity: <span class="quantity-label">${cartItem.Quantity}</span>
+                Quantity: <span class="js-quantity-label-${matchingproduct.id} quantity-label">${cartItem.Quantity}</span>
               </span>
-              <span class="update-quantity-link link-primary">
+              <span class="js-update-quantity-link update-quantity-link link-primary" data-product-id="${matchingproduct.id}">
                 Update
               </span>
-              <span class="js-delete-link delete-quantity-link link-primary" data-product-id=""${matchingproduct.id}>
+              <input class="js-quantity-input-${matchingproduct.id} quantity-input"data-product-id="${matchingproduct.id}">
+              <span class="save-quantity-link link-primary" data-product-id="${matchingproduct.id}">Save</span>
+              <span class="js-delete-link delete-quantity-link link-primary" data-product-id="${matchingproduct.id}">
                 Delete
               </span>
             </div>
@@ -84,17 +87,77 @@ cart.forEach((cartItem) => {
         </div>
       </div>
     `;
+
     cartSummaryHTML += html;
   }
 });
 
-document.querySelector('.js-order-summary').innerHTML = cartSummaryHTML;
-document.querySelectorAll('js-delete-link')
-  .forEach((link)=>{
-    link.addEventListener('click',()=>{
-    const productId=link.dataset.productId;
-    removeFromCart(productId);
-    const container = document.querySelector(`.js-cart-item-container-${productId}`);
-    container.remove();
-    })
+const orderSummaryEl = document.querySelector('.js-order-summary');
+if (orderSummaryEl) {
+  orderSummaryEl.innerHTML = cartSummaryHTML;
+}
+
+function updateCartDisplayQuantity(){
+  const cartQuantity = calculateCartQuantity();
+
+  const linkEl = document.querySelector('.js-return-to-home-link');
+  if (linkEl) {
+    linkEl.innerHTML = cartQuantity;
+  }
+}
+
+updateCartDisplayQuantity();
+
+
+document.querySelectorAll('.js-delete-link')
+  .forEach((link) => {
+    link.addEventListener('click', () => {
+      const productId = link.dataset.productId;
+      removeFromCart(productId);
+      updateCartDisplayQuantity();
+
+      const container = document.querySelector(`.js-cart-item-container-${productId}`);
+      if (container) container.remove();
+    });
+  });
+
+  document.querySelectorAll('.js-update-quantity-link')
+    .forEach((link) => {
+      link.addEventListener('click', () => {
+        const productId = link.dataset.productId;
+        const container = document.querySelector(`.js-cart-item-container-${productId}`);
+        container.classList.add('is-editing-quantity')
+      });
+    });
+  
+document.querySelectorAll('.save-quantity-link')
+  .forEach((link) => {
+    link.addEventListener('click', () => {
+      editQuantity(link);
   })
+});
+
+
+    document.querySelectorAll('.quantity-input')
+      .forEach((link)=>{
+        link.addEventListener('keydown', (event)=>{
+        if (event.key==='Enter'){
+          editQuantity(link);
+        }
+      })
+    })
+function editQuantity(link){
+      const productId = link.dataset.productId;
+      const container = document.querySelector(`.js-cart-item-container-${productId}`);
+      const quantityInput = document.querySelector(`.js-quantity-input-${productId}`);
+      const newQuantity = Number(quantityInput.value);
+      
+      if (newQuantity > 0 && newQuantity <= 1000) {
+        updateQuantity(productId, newQuantity);
+        const quantityLabel = document.querySelector(`.js-quantity-label-${productId}`);
+        if (quantityLabel) quantityLabel.innerHTML = newQuantity;
+        updateCartDisplayQuantity();
+        updateCartQuantity();
+      }
+      if (container) container.classList.remove('is-editing-quantity');
+}

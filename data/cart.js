@@ -19,6 +19,7 @@ export function addToCart(productId, StrQuan) {
     cart.push({
       productId,
       Quantity: Number(StrQuan),
+      deliveryOptionId:'1'
     });
   }
 
